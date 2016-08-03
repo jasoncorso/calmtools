@@ -12,11 +12,14 @@ Brief Description and File System Layout
 
     calm/             --->  main package
       monitors/       --->  sub-package for monitors
+      tests/          --->  sub-package with unit tests (and examples)
 
 Binaries created
 
     calmloss          --->  a loss monitor that will track a training 
                             process (requires wxPython)
+
+    calmmaketestdata  --->  create small testing data at /tmp needed for unit tests
 
 License
 -------
@@ -51,6 +54,10 @@ If you want to let pip install them all, then just the following
     python setup.py install 
     or              develop
 
+Then
+
+    calmmaketestdata
+    python setup.py test
 
 
 Uninstall

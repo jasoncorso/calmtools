@@ -27,6 +27,9 @@ setup(
     #ext_modules=[],
     #cmdclass   =[],
     entry_points = {
+        'console_scripts': [
+            'calmmaketestdata=calm.tests.maketestdata:main'
+        ],
         'gui_scripts': [
             'calmloss=calm.monitors.loss:main'
         ],
