@@ -1,4 +1,10 @@
 from setuptools import setup
+import unittest
+
+def test_suite():
+    test_loader = unittest.TestLoader()
+    test_suite = test_loader.discover('calm.tests', pattern='*_test.py')
+    return test_suite
 
 setup(
     name="calmtools",
@@ -25,4 +31,5 @@ setup(
             'calmloss=calm.monitors.loss:main'
         ],
     },
+    test_suite='setup.test_suite',
 )
