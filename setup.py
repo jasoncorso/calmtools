@@ -11,13 +11,18 @@ setup(
     requires=[
         "numpy (>=1.7.0)",
         "scipy (>=0.13.0)",
-        "wxPython (>=3.0.0.0)",
+        "wxPython (>=3.0.0)",
         "watchdog (>=0.8.3)",
         "matplotlib (>=1.5.1)",
         "lmdb (>=0.84)",
     ],
-    packages   =["calmtools"],
-    scripts    =[],
-    ext_modules=[],
-    cmdclass   =[],
+    packages   =["calm","calm.monitors"],
+    #scripts    =[],
+    #ext_modules=[],
+    #cmdclass   =[],
+    entry_points = {
+        'gui_scripts': [
+            'calmloss=calm.monitors.loss:main'
+        ],
+    },
 )
