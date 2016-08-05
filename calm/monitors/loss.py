@@ -1,10 +1,12 @@
 '''
-    calm.mon.monloss.py
+    calm.mon.loss.py
     jason corso
 
     MMonitors the loss during a caffe training and plots it incrementally
 
     Expects caffe to be maintaining a .INFO file in /tmp
+
+    Starts up by loading what is in /tmp/caffe.INFO
 
     Requires watchdog and wxpython
 '''
@@ -32,21 +34,8 @@ class UpdateEvent(FileSystemEventHandler):
                                                and event.src_path.find('.INFO') != -1:
             print "log %s updated" %(event.src_path)
 
-            f = open(event.src_path,'r')
-            s = f.read()
-            f.close()
-            pattern = re.compile(r'Iteration (\d+), loss = (\d+.\d+)')
-            grou = np.asarray(pattern.findall(s)).astype(np.float32)
-            self.app.iter = grou[:,0]
-            self.app.loss = grou[:,1]
 
-            print "min loss is %f"%(np.min(self.app.loss))
-            print "max loss is %f"%(np.max(self.app.loss))
-            print "mean loss is %f"%(np.mean(self.app.loss))
-            print "median loss is %f"%(np.median(self.app.loss))
-
-            self.app.update()
-            print self.app.jname
+            self.app.update(event.src_path)
 
 
 class MatplotlibPanel(wx.Panel):
@@ -93,15 +82,32 @@ class LossMonitor(wx.App):
         self.observer.start()
 
     def __del__(self):
+        wx.App.__del__(self)
         self.observer.stop()
         self.observer.join()
 
-    def update(self):
+    def update(self,path):
+
+        f = open(path,'r')
+        s = f.read()
+        f.close()
+        pattern = re.compile(r'Iteration (\d+), loss = (\d+.\d+)')
+        grou = np.asarray(pattern.findall(s)).astype(np.float32)
+
+        self.iter = grou[:,0]
+        self.loss = grou[:,1]
+
+        print "min loss is %f"%(np.min(self.loss))
+        print "max loss is %f"%(np.max(self.loss))
+        print "mean loss is %f"%(np.mean(self.loss))
+        print "median loss is %f"%(np.median(self.loss))
+
         self.panel.draw()
         self.panel.Refresh()
 
 def main():
     app = LossMonitor()
+    app.update('/tmp/caffe.INFO')
     app.MainLoop()
 
 
