@@ -12,7 +12,7 @@
 
 ## modules in calm
 # to allow calm.XXX
-#import data
+import dbtools
 
 ## sub-packages
 import monitors
