@@ -77,9 +77,9 @@ class LossMonitor(wx.App):
 
         self.jname = "Caffe Loss Monitor"
         self.frame = wx.Frame(None, title=self.jname)
+        self.panel = MatplotlibPanel(self.frame,self)
         if figuretitle is not None:
             self.panel.figure.suptitle(figuretitle)
-        self.panel = MatplotlibPanel(self.frame,self)
         self.panel.draw()
         self.frame.Show()
 
