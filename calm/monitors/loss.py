@@ -66,7 +66,7 @@ class MatplotlibPanel(wx.Panel):
 
 
 class LossMonitor(wx.App):
-    def __init__(self, redirect=False, filename=None, monitortest=False):
+    def __init__(self, redirect=False, filename=None, monitortest=False, figuretitle=None):
         wx.App.__init__(self, redirect, filename)
         #self.kSize = 480
         self.iter = np.zeros([10,1]) #np.asarray(range(10))
@@ -77,6 +77,8 @@ class LossMonitor(wx.App):
 
         self.jname = "Caffe Loss Monitor"
         self.frame = wx.Frame(None, title=self.jname)
+        if figuretitle is not None:
+            self.panel.figure.suptitle(figuretitle)
         self.panel = MatplotlibPanel(self.frame,self)
         self.panel.draw()
         self.frame.Show()
@@ -135,9 +137,10 @@ def main():
     parser.add_argument('--monitor-test', dest='monitortest', action='store_true', help='Monitor Test Loss')
     parser.add_argument('--no-monitor-test', dest='monitortest', action='store_false')
     parser.set_defaults(monitortest=False)
+    parser.add_argument('--figuretitle', type=str, help='Set the Title of the Loss Plot')
     args = parser.parse_args()
 
-    app = LossMonitor(monitortest = args.monitortest)
+    app = LossMonitor(monitortest = args.monitortest, figuretitle = args.figuretitle)
     app.update('/tmp/caffe.INFO')
     app.MainLoop()
 
