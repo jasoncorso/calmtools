@@ -123,6 +123,12 @@ class LossMonitor(wx.App):
                 print "no test loss present in the log even though you said to monitor it\n Turning off test loss monitoring"
                 self.monitortest = False
 
+            # fixes these two arrays in case the log file has only the first line due to buffering
+            if np.max(self.testiter.shape) != np.max(self.testloss.shape):
+                take = np.min([np.max(self.testiter.shape),np.max(self.testloss.shape)])
+                self.testiter = self.testiter[0:take]
+                self.testloss = self.testloss[0:take]
+
         if self.monitortest:
             print "test min loss is %f"%(np.min(self.testloss))
             print "test max loss is %f"%(np.max(self.testloss))
