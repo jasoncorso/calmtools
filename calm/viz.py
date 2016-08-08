@@ -25,8 +25,9 @@ def dbToImages(DB,format,isRGB=True):
     when writing.  The original database is not affected by this.
 
     @author: jason corso
-    @param DB path to input LMDB (readOnly)
-    @param format a printf-style format string, including a %s to write the key.png
+    @param string DB path to input LMDB (readOnly)
+    @param string format a printf-style format string, including a %s to write the key and
+                         ending in an image format extension that opencv understands
     '''
 
     env = lmdb.open(DB, readonly = True)
