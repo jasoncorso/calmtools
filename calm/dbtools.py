@@ -3,6 +3,11 @@
     jason corso
 
     Tools for caffe-related lmdb management
+    Functions here are of the following forms
+       DB     --> information about the db
+       DB     --> new DB
+       Data   --> DB
+       Params --> DB
 
 '''
 
