@@ -21,6 +21,7 @@ setup(
         "watchdog (>=0.8.3)",
         "matplotlib (>=1.5.1)",
         "lmdb (>=0.84)",
+        "cv2 (>=2.4.10)",
     ],
     packages   =["calm","calm.monitors"],
     #scripts    =[],
