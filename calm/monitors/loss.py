@@ -14,6 +14,7 @@
 import sys
 import os.path
 import time
+import argparse
 import re
 import numpy as np
 import wx
@@ -58,16 +59,21 @@ class MatplotlibPanel(wx.Panel):
         print "min loss is %f"%(np.min(self.app.loss))
         self.axes.clear()
         self.axes.plot(self.app.iter,self.app.loss)
+        if self.app.monitortest:
+            self.axes.plot(self.app.testiter,self.app.testloss,color="green")
         self.canvas.draw()
         self.canvas.Refresh()
 
 
 class LossMonitor(wx.App):
-    def __init__(self, redirect=False, filename=None):
+    def __init__(self, redirect=False, filename=None, monitortest=False):
         wx.App.__init__(self, redirect, filename)
         #self.kSize = 480
         self.iter = np.zeros([10,1]) #np.asarray(range(10))
         self.loss = np.zeros([10,1]) #np.random.randint(0,100,[10,1])
+        self.testiter = np.zeros([10,1]) #np.asarray(range(10))
+        self.testloss = np.zeros([10,1]) #np.random.randint(0,100,[10,1])
+        self.monitortest = monitortest
 
         self.jname = "Caffe Loss Monitor"
         self.frame = wx.Frame(None, title=self.jname)
@@ -102,11 +108,36 @@ class LossMonitor(wx.App):
         print "mean loss is %f"%(np.mean(self.loss))
         print "median loss is %f"%(np.median(self.loss))
 
+        if self.monitortest:
+            t1pat = re.compile(r'Iteration (\d+), Testing net')
+            t1gro = np.asarray(t1pat.findall(s)).astype(np.float32)
+
+            t2pat = re.compile(r'Test loss: (\d+.\d+)')
+            t2gro = np.asarray(t2pat.findall(s)).astype(np.float32)
+
+            self.testiter = t1gro
+            self.testloss = t2gro
+            if (self.testloss.size == 0) or (self.testiter.size == 0):
+                print "no test loss present in the log even though you said to monitor it\n Turning off test loss monitoring"
+                self.monitortest = False
+
+        if self.monitortest:
+            print "test min loss is %f"%(np.min(self.testloss))
+            print "test max loss is %f"%(np.max(self.testloss))
+            print "test mean loss is %f"%(np.mean(self.testloss))
+            print "test median loss is %f"%(np.median(self.testloss))
+
         self.panel.draw()
         self.panel.Refresh()
 
 def main():
-    app = LossMonitor()
+    parser = argparse.ArgumentParser(description='Short sample app')
+    parser.add_argument('--monitor-test', dest='monitortest', action='store_true', help='Monitor Test Loss')
+    parser.add_argument('--no-monitor-test', dest='monitortest', action='store_false')
+    parser.set_defaults(monitortest=False)
+    args = parser.parse_args()
+
+    app = LossMonitor(monitortest = args.monitortest)
     app.update('/tmp/caffe.INFO')
     app.MainLoop()
 
