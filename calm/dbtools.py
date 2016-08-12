@@ -11,10 +11,12 @@
 
 '''
 
+import glob
 import lmdb
 import caffe
 import numpy as np
 import scipy as sp
+import scipy.ndimage
 
 
 
@@ -46,8 +48,8 @@ def createDB(A,Y,DBO):
 
     @author: jason corso
     @param A list of arrays.
-    @param A list of integers (1D)
-    @param File path at which to save the data
+    @param Y A list of integers (1D)
+    @param DBO File path at which to save the data
     '''
 
     assert(len(A) == len(Y))
@@ -77,6 +79,55 @@ def createDB(A,Y,DBO):
         env.sync()
 
     env.close()
+
+
+def createDB_glob(globString,DBO,resize=None):
+    '''!@brief Create an LDMB at DBO from a globString (that finds images)
+
+    map_size is set to 1TB as we cannot know the size of the db.  on Linux this is fine. On windows, it will blow up.
+
+    Note that this does not know how to set the labels for the data and it sets them all to zero.
+
+    @author: jason corso
+    @param: glotString is the string passed to the glob function (e.g., '/tmp/image*.png')
+    @param: DBO file path at which to save the data
+    @param: resize is a [rows by columns] array to resize the image to, or it is None if no resizing (default is None)
+    @return: the number of images that were inserted into the database
+    '''
+
+    map_size = 1099511627776
+
+    env = lmdb.open(DBO,map_size=map_size)
+
+    count = 0
+
+    with env.begin(write=True) as txn:
+        for i in glob.iglob(globString):
+            image = scipy.ndimage.imread(i)
+            if resize is not None:
+                image = np.rollaxis(sp.misc.imresize(image,resize,interp='bilinear'),2)
+            else:
+                image = np.rollaxis(image,2)
+
+            datum          = caffe.proto.caffe_pb2.Datum()
+            datum.channels = image.shape[0]
+            datum.height   = image.shape[1]
+            datum.width    = image.shape[2]
+            datum.data     = image.tobytes()
+            datum.label    = 0
+
+            str_id = '{:08}'.format(count)
+
+            txn.put(str_id.encode('ascii'),datum.SerializeToString())
+
+            count = count + 1
+
+
+        env.sync()
+
+    env.close()
+
+    return count
 
 
 def dropPixels(DB,DBO,DBD,droprate=0.1,duprate=1):
