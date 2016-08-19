@@ -81,7 +81,7 @@ def createDB(A,Y,DBO):
     env.close()
 
 
-def createDB_glob(globString,DBO,resize=None):
+def createDB_glob(globString,DBO,resize=None,interp='bilinear',randPrefix=None):
     '''!@brief Create an LDMB at DBO from a globString (that finds images)
 
     map_size is set to 1TB as we cannot know the size of the db.  on Linux this is fine. On windows, it will blow up.
@@ -102,12 +102,16 @@ def createDB_glob(globString,DBO,resize=None):
     count = 0
 
     with env.begin(write=True) as txn:
-        for i in glob.iglob(globString):
+        for i in sorted(glob.glob(globString)):
             image = scipy.ndimage.imread(i)
+
             if resize is not None:
-                image = np.rollaxis(sp.misc.imresize(image,resize,interp='bilinear'),2)
-            else:
-                image = np.rollaxis(image,2)
+                image = sp.misc.imresize(image,resize,interp=interp)
+
+            if image.ndim == 2:
+                image = np.expand_dims(image,axis=2)
+
+            image = np.rollaxis(image,2)
 
             datum          = caffe.proto.caffe_pb2.Datum()
             datum.channels = image.shape[0]
@@ -116,7 +120,11 @@ def createDB_glob(globString,DBO,resize=None):
             datum.data     = image.tobytes()
             datum.label    = 0
 
-            str_id = '{:08}'.format(count)
+            if randPrefix is not None:
+                str_id = '{:03}'.format(randPrefix[count]) + '{:05}'.format(count)
+            else:
+                str_id = '{:08}'.format(count)
+
 
             txn.put(str_id.encode('ascii'),datum.SerializeToString())
 
