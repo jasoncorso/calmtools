@@ -81,17 +81,21 @@ def createDB(A,Y,DBO):
     env.close()
 
 
-def createDB_glob(globString,DBO,resize=None,interp='bilinear',randPrefix=None):
+def createDB_glob(globString,DBO,resize=None,interp='bilinear',randPrefix=None,imReader=scipy.ndimage.imread):
     '''!@brief Create an LDMB at DBO from a globString (that finds images)
 
     map_size is set to 1TB as we cannot know the size of the db.  on Linux this is fine. On windows, it will blow up.
 
     Note that this does not know how to set the labels for the data and it sets them all to zero.
 
+    You can use a custom imReader in the event you have to preprocess the image data in an atypical way.
+    Otherwise, the standard scipy.ndimage.imread function is used.
+
     @author: jason corso
     @param: glotString is the string passed to the glob function (e.g., '/tmp/image*.png')
     @param: DBO file path at which to save the data
     @param: resize is a [rows by columns] array to resize the image to, or it is None if no resizing (default is None)
+    @param: imReader is a function that takes the path to an image and returns a numpy ndarray with the data (r,c,d)
     @return: the number of images that were inserted into the database
     '''
 
@@ -103,7 +107,7 @@ def createDB_glob(globString,DBO,resize=None,interp='bilinear',randPrefix=None):
 
     with env.begin(write=True) as txn:
         for i in sorted(glob.glob(globString)):
-            image = scipy.ndimage.imread(i)
+            image = imReader(i)
 
             if resize is not None:
                 image = sp.misc.imresize(image,resize,interp=interp)
