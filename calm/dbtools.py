@@ -81,7 +81,9 @@ def createDB(A,Y,DBO):
     env.close()
 
 
-def createDB_glob(globString,DBO,resize=None,interp='bilinear',randPrefix=None,imReader=scipy.ndimage.imread):
+def createDB_glob(globString,DBO,resize=None,interp='bilinear',randPrefix=None,
+                  imReader=scipy.ndimage.imread,
+                  setFloatData=False):
     '''!@brief Create an LDMB at DBO from a globString (that finds images)
 
     map_size is set to 1TB as we cannot know the size of the db.  on Linux this is fine. On windows, it will blow up.
@@ -96,6 +98,7 @@ def createDB_glob(globString,DBO,resize=None,interp='bilinear',randPrefix=None,i
     @param: DBO file path at which to save the data
     @param: resize is a [rows by columns] array to resize the image to, or it is None if no resizing (default is None)
     @param: imReader is a function that takes the path to an image and returns a numpy ndarray with the data (r,c,d)
+    @param: setFloatData will set datum.float_data instead of datum.data (default: False)
     @return: the number of images that were inserted into the database
     '''
 
@@ -121,7 +124,10 @@ def createDB_glob(globString,DBO,resize=None,interp='bilinear',randPrefix=None,i
             datum.channels = image.shape[0]
             datum.height   = image.shape[1]
             datum.width    = image.shape[2]
-            datum.data     = image.tobytes()
+            if setFloatData:
+                datum.float_data.extend(image.flat)
+            else:
+                datum.data = image.tobytes()
             datum.label    = 0
 
             if randPrefix is not None:
