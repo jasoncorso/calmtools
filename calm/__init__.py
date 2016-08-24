@@ -13,6 +13,7 @@
 ## modules in calm
 # to allow calm.XXX
 import dbtools
+import imtools
 import viz
 
 ## sub-packages
